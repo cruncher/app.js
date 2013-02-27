@@ -1,7 +1,7 @@
 <h1>app.js</h1>
 
-A simple and light app toolkit. Reads data attributes in
-the DOM to bind dynamic data to views.
+A simple and light app toolkit. Declaratively binds data
+to dynamic views as defined by data attributes in the HTML.
 
 <h2>Views</h2>
 
