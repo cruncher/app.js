@@ -1,0 +1,33 @@
+app.js
+
+A simple and light app toolkit. Reads data attributes in
+the DOM to bind dynamic data to views.
+
+Views
+
+<div data-view="name" data-data="path.to.data">
+    <h1>Hello world</h1>
+</div>
+
+Where 'name' is the key of a view function in app.views and
+'path.to.data' points to an object in app.data. The view is
+defined as a function that takes the DOM node and the data
+object as arguments:
+
+app.view['name'] = function(node, data) {
+	// Listen for changes to data.
+	observe(data, function(data) {
+		// Do something to the node.
+	});
+};
+
+Template
+
+<div data-template="name">
+    <h1>{{ prop }}</h1>
+</div>
+
+The template is stored as a DOM node in app.templates[name],
+and can be rendered with app.render(name, context), where
+context is an object with properties that match template tags
+such as {{ prop }}.
