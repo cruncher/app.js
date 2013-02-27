@@ -41,4 +41,4 @@ jQuery(document).ready().
 Other than that, there is no restriction about how your data
 is organised. The <code>data-data</code> attribute accepts
 a dot delimited path so you can find your data in any
-arbritrary structure.
+arbritrary structure inside of app.data.
