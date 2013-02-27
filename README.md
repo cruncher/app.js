@@ -28,9 +28,9 @@ object as arguments:
     </div>
 
 The template is stored as a DOM node in app.templates[name],
-and can be rendered with app.render(name, context), where
-context is an object with properties that match template tags
-– such as {{ prop }}.
+and can be cloned and rendered with app.render(name, context),
+where context is an object with properties that match template
+tags – such as {{ prop }}.
 
 <h2>Data</h2>
 
