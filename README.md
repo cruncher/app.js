@@ -31,3 +31,14 @@ The template is stored as a DOM node in app.templates[name],
 and can be rendered with app.render(name, context), where
 context is an object with properties that match template tags
 – such as {{ prop }}.
+
+<h2>Data</h2>
+
+Data must be defined before it is needed by a view. In the
+case of views already in the DOM, this means before
+jQuery(document).ready().
+
+Other than that, there is no restriction about how your data
+is organised. The <code>data-data</code> attribute accepts
+a dot delimited path so you can find your data in any
+arbritrary structure.
