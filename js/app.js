@@ -85,7 +85,7 @@
 	}
 	
 	function setupView(datas, views, node) {
-		if (debug) console.log('Setup view \'' + viewPath + '\' with data \'' + dataPath + '\'');
+		if (debug) console.log('setupView', node.getAttribute('data-view') || 'default', node.getAttribute('data-data'));
 		
 		var data = objFromPath(datas, node.getAttribute('data-data'));
 		    view = objFromPath(views, node.getAttribute('data-view') || 'default');
