@@ -36,10 +36,8 @@
 	    
 	    doc = jQuery(document),
 	    
-	    templates = {},
-	    views = {},
-	    
-	    app;
+	    rcomment = /\{\%\s*.+?\s*\%\}/g,
+	    rtag = /\{\{\s*(\w+)\s*\}\}/g;
 	
 	
 	// Pure functions
@@ -80,65 +78,95 @@
 		return objTo(root, path.split('.'), obj);
 	}
 	
-	function render(path, context) {
-		var template = typeof path === 'string' ?
-		    	objFromPath(templates, path) :
-		    	path ,
-		    node = jQuery.clone(template);
-		
-		node.innerHTML = jQuery.render(template.innerHTML, context);
-		return node;
-	};
+	function setupTemplate(templates, node) {
+		objToPath(templates, node.getAttribute('data-template'), node);
+		node.removeAttribute('data-template');
+		node.parentNode.removeChild(node);
+	}
 	
-	views['default'] = function(node, data) {
-		var html = node.innerHTML;
+	function setupView(datas, views, node) {
+		if (debug) console.log('Setup view \'' + viewPath + '\' with data \'' + dataPath + '\'');
 		
+		var data = objFromPath(datas, node.getAttribute('data-data'));
+		    view = objFromPath(views, node.getAttribute('data-view') || 'default');
+		
+		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
+		if (!data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
+		
+		view(node, data);
+	}
+	
+	function defaultView(node, data) {
+		var html = node.innerHTML;
+	
 		observe(data, function(data) {
 			node.innerHTML = jQuery.render(node.innerHTML, data);
 		});
 		
 		render(node, data);
+	}
+	
+	function replaceStringFn(obj) {
+		return function($0, $1) {
+			// $1 is the template key. Don't render falsy values like undefined.
+			var value = obj[$1];
+			
+			return value instanceof Array ?
+				value.join(', ') :
+				value === undefined || value === null ? '' :
+				value ;
+		};
+	}
+	
+	function render(template, obj) {
+		return template
+			.replace(rcomment, '')
+			.replace(rtag, replaceStringFn(obj));
 	};
 	
-	doc.ready(function(){
-		if (debug) var start = Date.now();
+	function renderTemplate(template, context) {
+		var node = jQuery.clone(template);
 		
-		// Extract templates
-		jQuery('[data-template]').each(function() {
-			var elem = jQuery(this),
-			    path = this.getAttribute('data-template');
-			
-			this.removeAttribute('data-template');
-			objToPath(app.templates, path, this);
-			elem.remove();
-		});
-		
-		// Initialise views and bind them to dom nodes
-		jQuery('[data-data]').each(function() {
-			var dataPath = this.getAttribute('data-data'),
-			    viewPath = this.getAttribute('data-view') || 'default',
-			    view, data;
-			
-			if (debug) console.log('Setup view \'' + viewPath + '\' with data \'' + dataPath + '\'');
-			
-			data = objFromPath(app.data, dataPath);
-			view = objFromPath(app.views, viewPath);
-			
-			if (!view) { throw new Error(viewPath + ' not found in app.views'); }
-			if (!data)  { throw new Error(dataPath + ' not found in app.data'); }
-			
-			view(this, data);
-		});
-		
-		if (debug) console.log('Initialise templates and views: ' + (Date.now() - start) + 'ms');
-	});
+		node.innerHTML = render(template.innerHTML, context);
+		return node;
+	}
 	
 	
 	// Expose
 	
-	return (window.app = app = {
-		templates: templates,
-		views: views,
-		render: render
-	});
+	function App(data, node) {
+		var app = this,
+		    templates = {},
+		    views = {
+		    	'default': defaultView
+		    };
+		
+		doc.ready(function(){
+			if (debug) var start = Date.now();
+			
+			jQuery('[data-template]', node).each(function() {
+				setupTemplate(templates, this);
+			});
+
+			jQuery('[data-data]', node).each(function() {
+				setupView(app.data, views, this);
+			});
+			
+			if (debug) console.log('Initialise templates and views: ' + (Date.now() - start) + 'ms');
+		});
+		
+		app.data = data;
+		app.views = views;
+		app.templates = templates;
+	};
+	
+	App.fn = App.prototype = {
+		render: function(path, context) {
+			var template = objFromPath(this.templates, path);
+			
+			return renderTemplate(template, context);
+		}
+	};
+	
+	return (window.App = App);
 });
