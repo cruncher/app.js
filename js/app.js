@@ -29,9 +29,9 @@
 		define(['jquery', './observe'], module);
 	} else {
 		// Browser globals
-		module(jQuery, observe, !!window);
+		module(jQuery, !!window);
 	}
-})(function(jQuery, observe, global, undefined){
+})(function(jQuery, global, undefined){
 	var debug = false,
 	    
 	    doc = jQuery(document),
