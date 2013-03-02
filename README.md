@@ -3,6 +3,10 @@
 A simple and light app toolkit. Declaratively binds data
 to dynamic views as defined by data attributes in HTML.
 
+<h2>Launch</h2>
+
+    var app = new App();
+
 <h2>Views</h2>
 
     <div data-view="name" data-data="path.to.data">
@@ -14,7 +18,7 @@ Where 'name' is the key of a view function in app.views and
 defined as a function that takes the DOM node and the data
 object as arguments:
 
-    app.view['name'] = function(node, data) {
+    app.views['name'] = function(node, data) {
         // Listen for changes to data.
         observe(data, function(data) {
             // Do something to the node.
