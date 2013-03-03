@@ -90,8 +90,8 @@
 		var data = objFromPath(datas, node.getAttribute('data-data'));
 		    view = objFromPath(views, node.getAttribute('data-view') || 'default');
 		
-		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
-		if (!data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
+		if (!data) { throw new Error('\'' + (node.getAttribute('data-data')) + '\' not found in app.data'); }
+		if (!view) { throw new Error('\'' + (node.getAttribute('data-view') || 'default') + '\' not found in app.views'); }
 		
 		view(node, data);
 	}

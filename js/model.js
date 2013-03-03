@@ -24,6 +24,10 @@
 			this.trigger(prop);
 		},
 		
+		toJSON: function () {
+			return JSON.stringify(this._data);
+		}.
+		
 		post: function() {
 			var self = this;
 			
