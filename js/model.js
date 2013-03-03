@@ -21,7 +21,7 @@
 		
 		set: function(prop, value) {
 			this._data[prop] = value;
-			this.trigger('change', prop);
+			this.trigger(prop);
 		},
 		
 		post: function() {
@@ -60,7 +60,8 @@
 	
 			types = types.split(/\s+/);
 			events = this._events || (this._events = {});
-			args = Array.prototype.slice.call(arguments, 2);
+			args = Array.prototype.slice.call(arguments, 1);
+			args[0] = this;
 	
 			while (type = types.shift()) {
 				if (events[type]) {
@@ -116,7 +117,7 @@
 	
 		trigger: function(type) {
 			var listeners, i, l, args;
-			
+
 			if (!this._events || !this._events[type]) { return this; }
 	
 			// Use a copy of the event list in case it gets mutated while we're
@@ -128,7 +129,7 @@
 			l = listeners.length;
 			
 			while (++i < l) {
-				list[i][0].apply(this, list[i][1]);
+				listeners[i][0].apply(this, listeners[i][1]);
 			}
 	
 			return this;
