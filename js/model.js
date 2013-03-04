@@ -88,7 +88,7 @@
 			// No events, or removing *all* events.
 			if (!this._events) { return this; }
 		
-			if (!(types || callback)) {
+			if (!(types || fn)) {
 				delete this._events;
 				return this;
 			}
