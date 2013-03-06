@@ -4,7 +4,7 @@
 // Redefines property prop of object obj with a getter and setter
 // that call function fn whenever this property is changed.
 
-window.observe = (function(){
+(function(ns){
 	var slice = Array.prototype.slice;
 	
 	function call(array) {
@@ -54,12 +54,12 @@ window.observe = (function(){
 		replaceProperty(obj, prop, observer, call);
 	}
 	
-	return function(obj, prop, fn) {
+	function observe(obj, prop, fn) {
 		var args, key;
 		
 		// Overload observe to handle observing all properties with
 		// the function signature observe(obj, fn).
-		if (prop instanceof Function) {
+		if (toString.call(prop) === '[object Function]') {
 			fn = prop;
 			
 			for (prop in obj) {
@@ -77,11 +77,15 @@ window.observe = (function(){
 				args.splice(1, 0, prop[key], fn);
 				observeProperty.apply(null, args);
 			}
+			
+			return;
 		}
 		
 		observeProperty.apply(null, arguments);
 	};
-})();
+	
+	ns.observe = observe;
+})(window);
 
 function observeCollection(array, prop, fn) {
 	var key, args;
