@@ -1,11 +1,19 @@
 // Observe and unobserve
 // 
-// observe(obj, prop, fn)
-// Redefines property prop of object obj with a getter and setter
-// that call function fn whenever this property is changed.
+// observe(obj, [prop], fn)
+// unobserve(obj, [prop], [fn])
+// 
+// Crudely observes object properties for changes by redefining
+// properties of the observable object with setters that fire
+// a callback function whenever the property changes.
 
 (function(ns){
-	var slice = Array.prototype.slice;
+	var slice = Array.prototype.slice,
+	    toString = Object.prototype.toString;
+	
+	function isFunction(obj) {
+		toString.call(obj) === '[object Function]';
+	}
 	
 	function call(array) {
 		// Call observer with stored arguments
@@ -41,7 +49,7 @@
 		    args = slice.call(arguments, 0),
 		    observer = [fn, args];
 		
-		args.splice(1,2);
+		args.splice(2,1);
 		
 		// If an observers list is already defined, this property is
 		// already being observed, and all we have to do is add our
@@ -61,22 +69,13 @@
 		// the function signature observe(obj, fn).
 		if (toString.call(prop) === '[object Function]') {
 			fn = prop;
+			args = slice.call(arguments, 0);
+			args.splice(1, 0, null);
 			
 			for (prop in obj) {
-				args = slice.call(arguments, 0);
-				args.splice(1, 0, prop, fn);
+				args[1] = prop;
 				observeProperty.apply(null, args);
 			};
-			
-			return;
-		}
-		
-		if (prop instanceof Array) {
-			for (key in prop) {
-				args = slice.call(arguments, 0);
-				args.splice(1, 0, prop[key], fn);
-				observeProperty.apply(null, args);
-			}
 			
 			return;
 		}
@@ -84,41 +83,31 @@
 		observeProperty.apply(null, arguments);
 	};
 	
+	function unobserve(obj, prop, fn) {
+		if (prop instanceof Function) {
+			fn = prop;
+			
+			for (prop in obj) {
+				unobserve(data, key, fn);
+			};
+			
+			return;
+		}
+		
+		var desc = Object.getOwnPropertyDescriptor(obj, prop);
+		
+		if (!desc.set || !desc.set.observers) { return; }
+		
+		if (fn) {
+			desc.set.observers = desc.set.observers.filter(function(fn2) {
+				return fn !== fn2;
+			});
+		}
+		else {
+			desc.set.observers.length = 0;
+		}
+	}
+	
 	ns.observe = observe;
+	ns.unobserve = unobserve;
 })(window);
-
-function observeCollection(array, prop, fn) {
-	var key, args;
-	
-	for (key in array) {
-		args = Array.prototype.slice.call(arguments, 0);
-		args.splice(0, 1, array[key]);
-		args.splice(3, 0, key);
-		observe.apply(null, args);
-	};
-}
-
-function unobserve(obj, prop, fn) {
-	if (prop instanceof Function) {
-		fn = prop;
-		
-		for (prop in obj) {
-			unobserve(data, key, fn);
-		};
-		
-		return;
-	}
-	
-	var desc = Object.getOwnPropertyDescriptor(obj, prop);
-	
-	if (!desc.set || !desc.set.observers) { return; }
-	
-	if (fn) {
-		desc.set.observers = desc.set.observers.filter(function(fn2) {
-			return fn !== fn2;
-		});
-	}
-	else {
-		desc.set.observers.length = 0;
-	}
-}
