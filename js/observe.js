@@ -49,7 +49,8 @@
 		    args = slice.call(arguments, 0),
 		    observer = [fn, args];
 		
-		args.splice(2,1);
+		// Cut both prop and fn out of the args list
+		args.splice(1,2);
 		
 		// If an observers list is already defined, this property is
 		// already being observed, and all we have to do is add our

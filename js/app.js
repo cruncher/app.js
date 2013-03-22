@@ -32,7 +32,7 @@
 		module(jQuery, !!window);
 	}
 })(function(jQuery, global, undefined){
-	var debug = false,
+	var debug = true,//false,
 	    
 	    doc = jQuery(document),
 	    
@@ -85,25 +85,16 @@
 	}
 	
 	function setupView(datas, views, node) {
-		if (debug) console.log('setupView', node.getAttribute('data-view') || 'default', node.getAttribute('data-data'));
+		var viewPath = node.getAttribute('data-view'),
+		    dataPath = node.getAttribute('data-data'),
+		    view = objFromPath(views, viewPath),
+		    data = objFromPath(datas, dataPath);
 		
-		var data = objFromPath(datas, node.getAttribute('data-data'));
-		    view = objFromPath(views, node.getAttribute('data-view') || 'default');
-		
-		if (!data) { throw new Error('\'' + (node.getAttribute('data-data')) + '\' not found in app.data'); }
-		if (!view) { throw new Error('\'' + (node.getAttribute('data-view') || 'default') + '\' not found in app.views'); }
+		if (debug) console.log('[app] view: "' + viewPath + (dataPath ? '" data: "' + dataPath + '"' : ''));
+		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
+		if (dataPath && !data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
 		
 		view(node, data);
-	}
-	
-	function defaultView(node, data) {
-		var html = node.innerHTML;
-	
-		observe(data, function(data) {
-			node.innerHTML = jQuery.render(node.innerHTML, data);
-		});
-		
-		render(node, data);
 	}
 	
 	function replaceStringFn(obj) {
@@ -134,12 +125,11 @@
 	
 	// Expose
 	
-	function App(data, node) {
+	function App(node, settings) {
 		var app = this,
+		    data = {},
 		    templates = {},
-		    views = {
-		    	'default': defaultView
-		    };
+		    views = {};
 		
 		doc.ready(function(){
 			if (debug) var start = Date.now();
@@ -148,7 +138,7 @@
 				setupTemplate(templates, this);
 			});
 
-			jQuery('[data-data]', node).each(function() {
+			jQuery('[data-view]', node).each(function() {
 				setupView(app.data, views, this);
 			});
 			
