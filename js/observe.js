@@ -34,6 +34,7 @@
 		    	set: function(u) {
 		    		if (u === v) { return; }
 		    		v = u;
+
 		    		observers.forEach(call);
 		    	}
 		    };
@@ -80,11 +81,13 @@
 			
 			return;
 		}
-		
+
 		observeProperty.apply(null, arguments);
 	}
 	
 	function unobserve(obj, prop, fn) {
+		var desc, observers, index;
+
 		if (prop instanceof Function) {
 			fn = prop;
 			
@@ -95,13 +98,17 @@
 			return;
 		}
 		
-		var desc = Object.getOwnPropertyDescriptor(obj, prop);
-		
-		if (!desc.set || !desc.set.observers) { return; }
+		desc = Object.getOwnPropertyDescriptor(obj, prop);
+		observers = desc.set && desc.set.observers;
+
+		if (!observers) { return; }
 		
 		if (fn) {
-			desc.set.observers = desc.set.observers.filter(function(fn2) {
-				return fn !== fn2;
+			// Remove all references to fn
+			observers.forEach(function(observer, i, observers) {
+				if (observer[0] === fn) {
+					observers.splice(i, 1);
+				}
 			});
 		}
 		else {
