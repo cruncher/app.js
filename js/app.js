@@ -142,7 +142,7 @@
 				setupView(app.data, views, this);
 			});
 			
-			if (debug) console.log('Initialise templates and views: ' + (Date.now() - start) + 'ms');
+			if (debug) console.log('[app] Initialised templates and views (' + (Date.now() - start) + 'ms)');
 		});
 		
 		app.data = data;

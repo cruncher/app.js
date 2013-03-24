@@ -82,7 +82,7 @@
 		}
 		
 		observeProperty.apply(null, arguments);
-	};
+	}
 	
 	function unobserve(obj, prop, fn) {
 		if (prop instanceof Function) {
