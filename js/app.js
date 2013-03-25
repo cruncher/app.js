@@ -32,7 +32,7 @@
 		module(jQuery, !!window);
 	}
 })(function(jQuery, global, undefined){
-	var debug = true,//false,
+	var debug = false,
 	    
 	    doc = jQuery(document),
 	    
