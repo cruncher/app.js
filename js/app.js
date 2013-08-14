@@ -84,7 +84,7 @@
 		node.parentNode.removeChild(node);
 	}
 	
-	function setupView(datas, views, node) {
+	function setupView(datas, views, node, settings) {
 		var viewPath = node.getAttribute('data-view'),
 		    dataPath = node.getAttribute('data-data'),
 		    view = objFromPath(views, viewPath),
@@ -94,7 +94,7 @@
 		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
 		if (dataPath && !data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
 		
-		view(node, data);
+		view(node, data, settings);
 	}
 	
 	function replaceStringFn(obj) {
@@ -130,7 +130,16 @@
 		    data = {},
 		    templates = {},
 		    views = {};
-		
+
+		// Accept a selector as the first argument
+		if (typeof node === 'string') {
+			node = jQuery(node)[0];
+
+			if (!node) {
+				throw new Error('Node not found from selector \'' + arguments[0] + '\'.');
+			}
+		}
+
 		doc.ready(function(){
 			if (debug) var start = Date.now();
 			
@@ -139,7 +148,7 @@
 			});
 
 			jQuery('[data-view]', node).each(function() {
-				setupView(app.data, views, this);
+				setupView(app.data, views, this, settings);
 			});
 			
 			if (debug) console.log('[app] Initialised templates and views (' + (Date.now() - start) + 'ms)');
