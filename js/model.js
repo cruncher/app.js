@@ -8,10 +8,13 @@
 	}
 })(function(jQuery, global, undefined){
 	
-	function Model(data, url) {
+	function returnTrue() { return true; }
+
+	function returnFalse() { return false; }
+
+
+	function Model(data) {
 		this._data = data;
-		this.url = url;
-		this.saved = false;
 	}
 	
 	Model.prototype = {
@@ -28,6 +31,8 @@
 			return JSON.stringify(this._data);
 		},
 		
+		saved: returnFalse,
+		
 		post: function() {
 			var self = this;
 			
@@ -37,7 +42,7 @@
 				type: 'POST'
 			})
 			.done(function() {
-				self.saved = true;
+				self.saved = returnTrue;
 				self.trigger('post', arguments)
 			});
 		},
@@ -51,7 +56,7 @@
 				type: 'CREATE'
 			})
 			.done(function() {
-				self.saved = true;
+				self.saved = returnTrue;
 				self.trigger('create', arguments)
 			});
 		},
