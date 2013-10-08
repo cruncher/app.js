@@ -3,8 +3,8 @@
 // Binds data to the DOM. Changes in data are then immediately rendered
 // in the nodes that display that data via template tags such as {{ name }}.
 // Only those nodes containing the changed data are updated, other nodes are
-// not re-rendered, and the actual DOM tree does not change. Template tags
-// can also be used in the attributes href, title, id, class, style and value.
+// left alone. The actual DOM tree does not change. Template tags can also
+// be used in the attributes href, title, id, class, style and value.
 // 
 // dataBind(node, bindFn, getFn)
 // 
