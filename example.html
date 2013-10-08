@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+
+
+<style>
+	.state-0 {
+		background-color: yellow;
+	}
+	.state-1 {
+		background-color: orange;
+	}
+	.state-2 {
+		background-color: red;
+	}
+</style>
+
+<div class="state-{{a}}" data-app="data.object">
+	Hello {{b}}.
+	<p>{{ b}} - how's it hanging, {{c}}?</p>
+	<input value="{{d }}" />
+	<!-- Hello -->
+	<p style="background-color: {{ e }};">
+		Evening all {{f     }}
+		<a href=""></a>
+	</p>
+</div>
+
+<script src="js/jquery-2.0.0b2.js"></script>
+<script src="js/observe.js"></script>
+<script src="js/nodebind.js"></script>
+<script>
+	jQuery('[data-app]').each(function(i, node) {
+		data = {};
+
+		function bind(property, fn) {
+			observe(data, property, fn);
+		}
+
+		function get(property) {
+			return data[property];
+		}
+
+		window.dataBind(node, bind, get);
+	});
+
+</script>
