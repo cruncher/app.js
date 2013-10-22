@@ -92,7 +92,7 @@
 		
 		//if (debug) console.log('[app] view: "' + viewPath + (dataPath ? '" data: "' + dataPath + '"' : ''));
 		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
-		if (dataPath && !data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
+		if (dataPath && data === undefined) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
 		
 		view(node, data, settings);
 	}
