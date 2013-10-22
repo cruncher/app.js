@@ -41,11 +41,10 @@
 	var textCount = 0;
 
 	var types = {
-		1: function domNode(node, bind, get) {
+		1: function domNode(node, bind, unbind, get) {
 			var a = attributes.length,
+			    detachArray = [],
 			    attribute, value;
-
-			nodeCount++;
 
 			while (a--) {
 				attribute = attributes[a];
@@ -53,7 +52,7 @@
 
 				if (!value) { continue; }
 				
-				bindAttribute(node, attribute, value, bind, get);
+				detachArray.push(bindAttribute(node, attribute, value, bind, unbind, get));
 			}
 
 			var children = node.childNodes,
@@ -65,25 +64,35 @@
 			while (++n < l) {
 				child = children[n];
 				if (types[child.nodeType]) {
-					types[child.nodeType](child, bind, get);
+					detachArray = detachArray.concat(types[child.nodeType](child, bind, unbind, get));
 				}
 			}
+
+			nodeCount++;
+
+			return detachArray;
 		},
 
-		3: function textNode(node, bind, get) {
-			var innerText = node.innerText ? 'innerText' : 'textContent';
-			
+		3: function textNode(node, bind, unbind, get) {
+			var detachFn = bindText(node, bind, unbind, get);
+
 			textCount++;
 
-			observeProperties(node[innerText], bind, get, function(text) {
-				node[innerText] = text;
-			});
+			return [detachFn];
 		}
 	};
 
-	function bindAttribute(node, attribute, value, bind, get) {
-		observeProperties(value, bind, get, function(text) {
+	function bindAttribute(node, attribute, value, bind, unbind, get) {
+		return observeProperties(value, bind, unbind, get, function(text) {
 			node.setAttribute(attribute, text);
+		});
+	}
+
+	function bindText(node, bind, unbind, get) {
+		var innerText = node.innerText ? 'innerText' : 'textContent';
+		
+		return observeProperties(node[innerText], bind, unbind, get, function(text) {
+			node[innerText] = text;
 		});
 	}
 
@@ -102,22 +111,42 @@
 		return properties;
 	}
 
-	function observeProperties(text, bind, get, fn) {
-		var properties = extractProperties(text);
+	function observeProperties(text, bind, unbind, get, fn) {
+		var properties = extractProperties(text),
+		    flag = false;
 
-		properties.forEach(function(property) {
-			bind(property, function() {
-				fn(text.replace(rname, function($0, $1) {
-					var word = get($1);
-					return word === undefined ? '' : word ;
-				}));
-			});
+		function replaceText($0, $1) {
+			var word = get($1);
+			return word === undefined ? '' : word ;
+		}
+		
+		function update() {
+			flag = false;
+			fn(text.replace(rname, replaceText));
+		}
+
+		function change() {
+			if (flag) { return; }
+			flag = true;
+			window.requestAnimationFrame(update);
+		}
+
+		// Observe properties
+		properties.forEach(function attach(property) {
+			bind(property, change);
 		});
+		
+		// Return a function that unobserves properties
+		return function() {
+			properties.forEach(function detach(property) {
+				unbind(property, change);
+			});
+		};
 	}
 
-	function bindData(node, bind, get) {
+	function bindData(node, bind, unbind, get) {
 		// Assume this is a DOM node, and set the binder off
-		types[1](node, bind, get);
+		types[1](node, bind, unbind, get);
 
 		console.log('node count', nodeCount);
 		console.log('text count', textCount);
