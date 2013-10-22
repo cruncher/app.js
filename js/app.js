@@ -32,7 +32,7 @@
 		module(jQuery, !!window);
 	}
 })(function(jQuery, global, undefined){
-	var debug = false,
+	var debug = true,//false,
 	    
 	    doc = jQuery(document),
 	    
@@ -88,9 +88,9 @@
 		var viewPath = node.getAttribute('data-view'),
 		    dataPath = node.getAttribute('data-data'),
 		    view = objFromPath(views, viewPath),
-		    data = objFromPath(datas, dataPath);
+		    data = dataPath ? objFromPath(datas, dataPath) : datas;
 		
-		if (debug) console.log('[app] view: "' + viewPath + (dataPath ? '" data: "' + dataPath + '"' : ''));
+		//if (debug) console.log('[app] view: "' + viewPath + (dataPath ? '" data: "' + dataPath + '"' : ''));
 		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
 		if (dataPath && !data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
 		
