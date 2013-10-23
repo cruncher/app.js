@@ -26,7 +26,7 @@
 </div>
 
 <div class="state-{{a}}" data-app="example" data-data="example2">
-	Hello {{b}}.
+	Hello {{ b|multiply:2|fixed:2 }}.
 	<p>{{ b}} - how's it hanging, {{c}}?</p>
 	<input value="{{d }}" />
 	<!-- Hello -->
@@ -39,19 +39,26 @@
 <!--input value="{{value}}" data-app="input" data-context="input"/-->
 
 <script src="js/jquery-2.0.0b2.js"></script>
-<script src="js/app.js"></script>
+<!--script src="js/app.js"></script-->
 <script src="js/observe.js"></script>
 <script src="js/nodebind.js"></script>
 <script>
 
 	var app = {
 		observe: observe,
-		unobserve: unobserve
+		unobserve: unobserve,
+		filters: {
+			fixed: Number.prototype.toFixed,
+			multiply: function(n) { return this * n; },
+			log: function() {
+				console.log(this, arguments);
+			}
+		}
 	}
 
-	jQuery('[data-app]').each(function(i, node) {
-		data = {};
+data = {};
 
+	jQuery('[data-app]').each(function(i, node) {
 		function observe(property, fn) {
 			app.observe(data, property, fn);
 		}
@@ -68,25 +75,25 @@
 	});
 
 
-	app.create('example', function update(node, data) {
-		console.log('example', node, data);
-	});
-
-	app.data('example1', {
-		a: 'a',
-		b: 'b',
-		c: 'c',
-		d: 'd',
-		e: 'e'
-	});
-
-	app.data('example2', {
-		a: '1',
-		b: '2',
-		c: '3',
-		d: '4',
-		e: '5'
-	});
+//	app.create('example', function update(node, data) {
+//		console.log('example', node, data);
+//	});
+//
+//	app.data('example1', {
+//		a: 'a',
+//		b: 'b',
+//		c: 'c',
+//		d: 'd',
+//		e: 'e'
+//	});
+//
+//	app.data('example2', {
+//		a: '1',
+//		b: '2',
+//		c: '3',
+//		d: '4',
+//		e: '5'
+//	});
 
 
 

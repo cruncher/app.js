@@ -35,10 +35,13 @@
 		'value'
 	];
 
-	var rname = /\{\{\s*([a-z]+)\s*\}\}/g;
+	var rname = /\{\{\s*([a-z]+)\s*(?:\|([^\}]+))?\s*\}\}/g;
+	var rfilter = /\s*([a-zA-Z0-9_]+)\s*(?:\:(.+))?/;
 
 	var nodeCount = 0;
 	var textCount = 0;
+	
+	var filterCache = {};
 
 	var types = {
 		1: function domNode(node, bind, unbind, get) {
@@ -100,8 +103,8 @@
 		var propertiesCache = {},
 		    properties = [];
 		
-		str.replace(rname, function($0, $1){
-			// Make sure proerties are only added once.
+		str.replace(rname, function($0, $1, $2){
+			// Make sure properties are only added once.
 			if (!propertiesCache[$1]) {
 				propertiesCache[$1] = true;
 				properties.push($1);
@@ -111,13 +114,40 @@
 		return properties;
 	}
 
+	function toFilter(filter) {
+		var parts = rfilter.exec(filter);
+		console.log(filter, parts);
+		return {
+			fn: app.filters[parts[1]],
+			args: parts[2] && JSON.parse('[' + parts[2] + ']')
+		};
+	}
+	
+	function applyFilters(word, filterString) {
+		var filters = filterCache[filterString] || (
+		    	filterCache[filterString] = filterString.split('|').map(toFilter)
+		    ),
+		    l = filters.length,
+		    n = -1;
+		
+		while (++n < l) {
+			console.log(filters[n]);
+			word = filters[n].fn.apply(word, filters[n].args);
+		}
+		
+		return word;
+	}
+
 	function observeProperties(text, bind, unbind, get, fn) {
 		var properties = extractProperties(text),
 		    flag = false;
 
-		function replaceText($0, $1) {
+		function replaceText($0, $1, $2) {
 			var word = get($1);
-			return word === undefined ? '' : word ;
+			
+			return $2 ? applyFilters(word, $2) :
+				word === undefined ? '' :
+				word ;
 		}
 		
 		function update() {
