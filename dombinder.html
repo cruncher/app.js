@@ -20,13 +20,14 @@
 	<input value="{{d }}" />
 	<!-- Hello -->
 	<p style="background-color: {{ e }};">
-		Evening all {{f     }}
-		<a href="{{g}}">{{h}}</a>
+		Evening all {{f     }}<br/>
+		{{g|date:'M n O'}}
+		<a href="">{{h}}</a>
 	</p>
 </div>
 
 <div class="state-{{a}}" data-app="example" data-data="example2">
-	Hello {{ b|multiply:2|fixed:2 }}.
+	Hello {{ b|multiply:2|floatformat:2 }}.
 	<p>{{ b}} - how's it hanging, {{c}}?</p>
 	<input value="{{d }}" />
 	<!-- Hello -->
@@ -44,17 +45,12 @@
 <script src="js/nodebind.js"></script>
 <script>
 
-	var app = {
+	var Sparky = {
 		observe: observe,
-		unobserve: unobserve,
-		filters: {
-			fixed: Number.prototype.toFixed,
-			multiply: function(n) { return this * n; },
-			log: function() {
-				console.log(this, arguments);
-			}
-		}
-	}
+		unobserve: unobserve
+	};
+	
+	var app = Sparky;
 
 data = {};
 
@@ -140,3 +136,4 @@ data = {};
 //	});
 
 </script>
+<script src="js/app.filters.js"></script>

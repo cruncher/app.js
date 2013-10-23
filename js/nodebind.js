@@ -116,10 +116,12 @@
 
 	function toFilter(filter) {
 		var parts = rfilter.exec(filter);
-		console.log(filter, parts);
+		
+		console.log(parts[2].replace(/\'/g, '\"'));
+		
 		return {
 			fn: app.filters[parts[1]],
-			args: parts[2] && JSON.parse('[' + parts[2] + ']')
+			args: parts[2] && JSON.parse('[' + parts[2].replace(/\'/g, '\"') + ']')
 		};
 	}
 	
@@ -130,8 +132,10 @@
 		    l = filters.length,
 		    n = -1;
 		
+		console.log(filterString);
+		
 		while (++n < l) {
-			console.log(filters[n]);
+			console.log(n, filters[n]);
 			word = filters[n].fn.apply(word, filters[n].args);
 		}
 		

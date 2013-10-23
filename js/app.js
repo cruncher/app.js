@@ -84,17 +84,15 @@
 		node.parentNode.removeChild(node);
 	}
 	
-	function setupView(datas, views, node, settings) {
-		var viewPath = node.getAttribute('data-view'),
-		    dataPath = node.getAttribute('data-data'),
-		    view = objFromPath(views, viewPath),
-		    data = objFromPath(datas, dataPath);
+	function setup(node, name, path, settings) {
+		var app = apps[name],
+		    data = objFromPath(datas, path);
 		
-		if (debug) console.log('[app] view: "' + viewPath + (dataPath ? '" data: "' + dataPath + '"' : ''));
-		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
-		if (dataPath && !data) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
+		if (debug) console.log('app: "' + name + (path ? '" data: "' + path + '"' : ''));
+		if (!app) { throw new Error('\'' + name + '\' not found in apps'); }
+		if (path && !data) { throw new Error('\'' + path + '\' not found in data'); }
 		
-		view(node, data, settings);
+		app(node, data, settings);
 	}
 	
 	function replaceStringFn(obj) {
@@ -121,51 +119,57 @@
 		node.innerHTML = render(template.innerHTML, context);
 		return node;
 	}
-	
-	
-	// Expose
-	
-	function App(node, settings) {
-		var app = this,
-		    data = {},
-		    templates = {},
-		    views = {};
 
-		// Accept a selector as the first argument
-		if (typeof node === 'string') {
-			node = jQuery(node)[0];
-
-			if (!node) {
-				throw new Error('Node not found from selector \'' + arguments[0] + '\'.');
+	function createCache(cache) {
+		function getSet(name, obj) {
+			if (obj) {
+				cache[name] = obj;
+				return this;
 			}
+
+			return cache[name];
 		}
 
-		doc.ready(function(){
-			if (debug) var start = Date.now();
-			
-			jQuery('[data-template]', node).each(function() {
-				setupTemplate(templates, this);
-			});
+		getSet.cache = cache;
 
-			jQuery('[data-view]', node).each(function() {
-				setupView(app.data, views, this, settings);
-			});
-			
-			if (debug) console.log('[app] Initialised templates and views (' + (Date.now() - start) + 'ms)');
+		return getSet;
+	}
+
+	doc.ready(function(){
+		if (debug) var start = Date.now();
+		
+		jQuery('[data-template]', node).each(function() {
+			setupTemplate(templates, this);
+		});
+
+		jQuery('[data-app]', node).each(function(i, node) {
+			var name = node.getAttribute('data-app');
+			var data = node.getAttribute('data-data');
+
+			setup(node, name, data, settings);
+		});
+
+		jQuery('[data-app]').each(function(i, node) {
+			data = {};
+
+			function bind(property, fn) {
+				observe(data, property, fn);
+			}
+
+			function get(property) {
+				return data[property];
+			}
+
+			window.dataBind(node, bind, get);
 		});
 		
-		app.data = data;
-		app.views = views;
-		app.templates = templates;
+		if (debug) console.log('[app] Initialised templates and views (' + (Date.now() - start) + 'ms)');
+	});
+
+	app = {
+		app: createCache({}),
+		data: createCache({})
 	};
-	
-	App.fn = App.prototype = {
-		render: function(path, context) {
-			var template = objFromPath(this.templates, path);
-			
-			return renderTemplate(template, context);
-		}
-	};
-	
+
 	return (window.App = App);
 });
