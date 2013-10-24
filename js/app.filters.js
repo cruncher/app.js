@@ -1,13 +1,11 @@
 
 (function(app, undefined) {
-	var rbreaks = /\n/;
-
 	app.filters = {
 		add: function(n) {
 			return parseFloat(this) + n ;
 		},
 
-		capitalize: function() {
+		capfirst: function() {
 			return this.charAt(0).toUpperCase() + string.substring(1);
 		},
 
@@ -121,12 +119,15 @@
 		//length_is
 		//linebreaks
 
-		linebreaksbr: function() {
-			return this.replace(rbreaks, '<br/>')
-		},
+		linebreaksbr: (function() {
+			var rbreaks = /\n/;
+			
+			return function() {
+				return this.replace(rbreaks, '<br/>')
+			};
+		})(),
 
 		//linenumbers
-		//ljust
 
 		lower: String.prototype.toLowerCase,
 		
@@ -173,9 +174,37 @@
 		//sort
 		//stringformat
 
-		striptags: function() {
+		striptags: (function() {
+			var rtag = /<(?:[^>'"]|"[^"]*"|'[^']*')*>/g;
 			
-		},
+			return function() {
+				return this.replace(rtag, '');
+			};
+		})(),
+		
+		striptagsexcept: (function() {
+			var rtag = /<(\/)?(\w*)(?:[^>'"]|"[^"]*"|'[^']*')*>/g,
+			    allowedTags, result;
+			
+			function strip($0, $1, $2) {
+				// Strip any attributes, letting the allowed tag name through.
+				return $2 && allowedTags.indexOf($2) !== -1 ?
+					'<' + ($1 || '') + $2 + '>' :
+					'' ;
+			}
+			
+			return function(tags) {
+				if (!tags) {
+					return this.replace(rtag, '');
+				}
+				
+				allowedTags = tags.split(' ');
+				result = this.replace(rtag, strip);
+				allowedTags = false;
+
+				return result;
+			};
+		})(),
 
 		time: function() {
 			
@@ -194,7 +223,22 @@
 		//truncatewords
 		//truncatewords_html
 		//unique
-		//unordered_list
+		
+		unordered_list: function() {
+			// TODO: Django supports nested lists. 
+			var list = this,
+			    length = list.length,
+			    i = -1,
+			    html = '';
+			
+			while (++i < length) {
+				html += '<li>';
+				html += list[i];
+				html += '</li>';
+			}
+			
+			return html;
+		},
 
 		lower: String.prototype.toLowerCase,
 
@@ -209,8 +253,7 @@
 		}		
 	};
 
-	// Alias some filters for django compatibility
-	app.filters.capfirst = app.filters.capitalize;
-
+	// Alias some filters with odd names, for convenience
+	app.filters.capitalize = app.filters.capfirst;
 
 })(window.Sparky);
