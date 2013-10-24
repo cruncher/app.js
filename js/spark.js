@@ -23,19 +23,9 @@
 // context is an object with properties that match template tags
 // such as {{ prop }}.
 
-(function (module) {
-	if (typeof define === 'function' && define.amd) {
-		// AMD. Register as an anonymous module.
-		define(['jquery', './observe'], module);
-	} else {
-		// Browser globals
-		module(jQuery, !!window);
-	}
-})(function(jQuery, global, undefined){
-	var debug = true,//false,
-	    
+(function(jQuery, undefined){
+	var debug = false,
 	    doc = jQuery(document),
-	    
 	    rcomment = /\{\%\s*.+?\s*\%\}/g,
 	    rtag = /\{\{\s*(\w+)\s*\}\}/g;
 	
@@ -84,7 +74,6 @@
 		node.parentNode.removeChild(node);
 	}
 	
-<<<<<<< HEAD
 	function setup(node, name, path, settings) {
 		var app = apps[name],
 		    data = objFromPath(datas, path);
@@ -92,17 +81,6 @@
 		if (debug) console.log('app: "' + name + (path ? '" data: "' + path + '"' : ''));
 		if (!app) { throw new Error('\'' + name + '\' not found in apps'); }
 		if (path && !data) { throw new Error('\'' + path + '\' not found in data'); }
-=======
-	function setupView(datas, views, node, settings) {
-		var viewPath = node.getAttribute('data-view'),
-		    dataPath = node.getAttribute('data-data'),
-		    view = objFromPath(views, viewPath),
-		    data = dataPath ? objFromPath(datas, dataPath) : datas;
-		
-		//if (debug) console.log('[app] view: "' + viewPath + (dataPath ? '" data: "' + dataPath + '"' : ''));
-		if (!view) { throw new Error('\'' + viewPath + '\' not found in app.views'); }
-		if (dataPath && data === undefined) { throw new Error('\'' + dataPath + '\' not found in app.data'); }
->>>>>>> de15e3f1f6989613720a174f9e8e033ac92b4919
 		
 		app(node, data, settings);
 	}
@@ -183,5 +161,10 @@
 		data: createCache({})
 	};
 
-	return (window.App = App);
+	if (window.require) {
+		module.exports = App;
+	}
+	else {
+		window.spark = App;
+	}
 });

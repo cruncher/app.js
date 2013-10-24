@@ -6,7 +6,7 @@
 // left alone. The actual DOM tree does not change. Template tags can also
 // be used in the attributes href, title, id, class, style and value.
 // 
-// dataBind(node, bindFn, getFn)
+// dataBind(node, observeFn, unobserveFn, getFn)
 // 
 // node
 // 
@@ -25,7 +25,11 @@
 // or model.
 
 
-(function() {
+(function(spark) {
+	"use strict";
+	
+	var debug = window.console && console.log ;
+	
 	var attributes = [
 		'href',
 		'title',
@@ -37,16 +41,16 @@
 
 	var rname = /\{\{\s*([a-z]+)\s*(?:\|([^\}]+))?\s*\}\}/g;
 	var rfilter = /\s*([a-zA-Z0-9_]+)\s*(?:\:(.+))?/;
+	var filterCache = {};
 
+	// For debugging
 	var nodeCount = 0;
 	var textCount = 0;
-	
-	var filterCache = {};
 
 	var types = {
 		1: function domNode(node, bind, unbind, get) {
 			var a = attributes.length,
-			    detachArray = [],
+			    unobservers = [],
 			    attribute, value;
 
 			while (a--) {
@@ -55,7 +59,7 @@
 
 				if (!value) { continue; }
 				
-				detachArray.push(bindAttribute(node, attribute, value, bind, unbind, get));
+				unobservers.push(bindAttribute(node, attribute, value, bind, unbind, get));
 			}
 
 			var children = node.childNodes,
@@ -67,13 +71,13 @@
 			while (++n < l) {
 				child = children[n];
 				if (types[child.nodeType]) {
-					detachArray = detachArray.concat(types[child.nodeType](child, bind, unbind, get));
+					unobservers = unobservers.concat(types[child.nodeType](child, bind, unbind, get));
 				}
 			}
 
 			nodeCount++;
 
-			return detachArray;
+			return unobservers;
 		},
 
 		3: function textNode(node, bind, unbind, get) {
@@ -120,7 +124,7 @@
 		console.log(parts[2].replace(/\'/g, '\"'));
 		
 		return {
-			fn: app.filters[parts[1]],
+			fn: spark.filters[parts[1]],
 			args: parts[2] && JSON.parse('[' + parts[2].replace(/\'/g, '\"') + ']')
 		};
 	}
@@ -178,13 +182,25 @@
 		};
 	}
 
-	function bindData(node, bind, unbind, get) {
-		// Assume this is a DOM node, and set the binder off
-		types[1](node, bind, unbind, get);
+	function traverse(node, observe, unobserve, get) {
+		nodeCount = 0;
+		textCount = 0;
+		
+		// Assume this is a DOM node, and set the binder off. The
+		// binder returns an array of unobserve functions that
+		// should be kept around in case the DOM element is removed
+		// and the bindings should be thrown away.
+		var unobservers = types[1](node, observe, unobserve, get);
 
-		console.log('node count', nodeCount);
-		console.log('text count', textCount);
+		if (debug) {
+			console.group('[spark] template: ' + node.id);
+			console.log('node count', nodeCount);
+			console.log('text count', textCount);
+			console.groupEnd();
+		}
+		
+		return unobservers;
 	}
 
-	window.dataBind = bindData;
-})();
+	spark.template = traverse;
+})(window.spark || require('spark'));

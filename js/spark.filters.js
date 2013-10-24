@@ -1,6 +1,10 @@
 
-(function(app, undefined) {
-	app.filters = {
+(function(spark, undefined) {
+	"use strict";
+
+	var debug = window.console && console.log;
+	
+	spark.filters = {
 		add: function(n) {
 			return parseFloat(this) + n ;
 		},
@@ -252,8 +256,4 @@
 			return this ? truthy : falsy ;
 		}		
 	};
-
-	// Alias some filters with odd names, for convenience
-	app.filters.capitalize = app.filters.capfirst;
-
-})(window.Sparky);
+})(window.spark || require('spark'));
