@@ -25,7 +25,7 @@
 // or model.
 
 
-(function(spark) {
+(function(sparky) {
 	"use strict";
 	
 	var debug = window.console && console.log ;
@@ -121,10 +121,10 @@
 	function toFilter(filter) {
 		var parts = rfilter.exec(filter);
 		
-		console.log(parts[2].replace(/\'/g, '\"'));
+		//console.log(parts[2].replace(/\'/g, '\"'));
 		
 		return {
-			fn: spark.filters[parts[1]],
+			fn: sparky.filters[parts[1]],
 			args: parts[2] && JSON.parse('[' + parts[2].replace(/\'/g, '\"') + ']')
 		};
 	}
@@ -136,10 +136,7 @@
 		    l = filters.length,
 		    n = -1;
 		
-		console.log(filterString);
-		
 		while (++n < l) {
-			console.log(n, filters[n]);
 			word = filters[n].fn.apply(word, filters[n].args);
 		}
 		
@@ -193,14 +190,16 @@
 		var unobservers = types[1](node, observe, unobserve, get);
 
 		if (debug) {
-			console.group('[spark] template: ' + node.id);
-			console.log('node count', nodeCount);
-			console.log('text count', textCount);
-			console.groupEnd();
+			console.log('dom nodes:  ' + nodeCount);
+			console.log('text nodes: ' + textCount);
 		}
 		
-		return unobservers;
+		return function untemplate() {
+			while (l--) {
+				unobservers[l]();
+			}
+		};
 	}
 
-	spark.template = traverse;
-})(window.spark || require('spark'));
+	sparky.template = traverse;
+})(window.sparky || require('sparky'));

@@ -1,10 +1,31 @@
 
-(function(spark, undefined) {
+(function(sparky, undefined) {
 	"use strict";
 
 	var debug = window.console && console.log;
+	var settings = (sparky.settings = sparky.settings || {});
 	
-	spark.filters = {
+	settings.months      = ('January February March April May June July August September October November December').split(' ');
+	settings.days        = ('Sunday Monday Tuesday Wednesday Thursday Friday Saturday').split(' ');
+	settings.ordinals    = (function(ordinals) {
+		var array = [], n = 0;
+		
+		while (n++ < 31) {
+			array[n] = ordinals[n] || 'th';
+		}
+		
+		return array;
+	})({
+		1: 'st',
+		2: 'nd',
+		3: 'rd',
+		21: 'st',
+		22: 'nd',
+		23: 'rd',
+		31: 'st'
+	});
+	
+	sparky.filters = {
 		add: function(n) {
 			return parseFloat(this) + n ;
 		},
@@ -21,14 +42,14 @@
 			var formatters = {
 				a: function(date) { return date.getHours() < 12 ? 'a.m.' : 'p.m.'; },
 				A: function(date) { return date.getHours() < 12 ? 'AM' : 'PM'; },
-				b: function(date) { return M[date.getMonth()].toLowerCase(); },
+				b: function(date) { return settings.months[date.getMonth()].toLowerCase().slice(0,3); },
 				c: function(date) { return date.toISOString(); },
 				d: function(date) { return date.getDate(); },
-				D: function(date) { return D[date.getDay()]; },
+				D: function(date) { return settings.days[date.getDay()].slice(0,3); },
 				//e: function(date) { return ; },
 				//E: function(date) { return ; },
 				//f: function(date) { return ; },
-				F: function(date) { return F[date.getMonth()]; },
+				F: function(date) { return settings.months[date.getMonth()]; },
 				g: function(date) { return date.getHours() % 12; },
 				G: function(date) { return date.getHours(); },
 				h: function(date) { return ('0' + date.getHours() % 12).slice(-2); },
@@ -36,10 +57,10 @@
 				i: function(date) { return ('0' + date.getMinutes()).slice(-2); },
 				//I: function(date) { return ; },
 				j: function(date) { return date.getDate(); },
-				l: function(date) { return l[date.getDay()]; },
+				l: function(date) { return settings.days[date.getDay()]; },
 				//L: function(date) { return ; },
 				m: function(date) { return ('0' + date.getMonth()).slice(-2); },
-				M: function(date) { return M[date.getMonth()]; },
+				M: function(date) { return settings.months[date.getMonth()].slice(0,3); },
 				n: function(date) { return date.getMonth(); },
 				//o: function(date) { return ; },
 				O: function(date) {
@@ -48,7 +69,7 @@
 				},
 				r: function(date) { return date.toISOString(); },
 				s: function(date) { return ('0' + date.getSeconds()).slice(-2); },
-				S: function(date) { return S[date.getDate()]; },
+				S: function(date) { return settings.ordinals[date.getDate()]; },
 				//t: function(date) { return ; },
 				//T: function(date) { return ; },
 				U: function(date) { return +date; },
@@ -57,23 +78,17 @@
 				y: function(date) { return date.getFullYear() % 100; },
 				Y: function(date) { return date.getFullYear(); },
 				//z: function(date) { return ; },
-				Z: function(date) { return -d.getTimezoneOffset() * 60; }
+				Z: function(date) { return -date.getTimezoneOffset() * 60; }
 			};
 			
-			return function(format) {
+			return function date(format) {
 				var date = this instanceof Date ? this : new Date(this) ;
 				
 				return format.replace(/([a-zA-Z])/g, function($0, $1) {
 					return formatters[$1](date);
 				});
 			};
-		})(
-			('Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov').split(' '),
-			('January February March April May June July August September October November December').split(' '),
-			('Sun Mon Tue Wed Thu Fri Sat').split(' '),
-			('Sunday Monday Tuesday Wednesday Thursday Friday Saturday').split(' '),
-			('st nd rd th th th th th th th').split(' ')
-		),
+		})(settings),
 		
 		'default': function(value) {
 			return (this === undefined || this === null) ? value : this ;
@@ -244,8 +259,6 @@
 			return html;
 		},
 
-		lower: String.prototype.toLowerCase,
-
 		//urlencode
 		//urlize
 		//urlizetrunc
@@ -256,4 +269,4 @@
 			return this ? truthy : falsy ;
 		}		
 	};
-})(window.spark || require('spark'));
+})(window.sparky || require('sparky'));
